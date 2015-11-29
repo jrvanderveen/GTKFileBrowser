@@ -10,6 +10,8 @@
 #include <limits.h>
 
 #include "buildTree.h"
+#include "../ListView/buildList.h"
+#include "../enum.h"
 
 #define MAX_PATH 1024
 
@@ -36,15 +38,15 @@ void build_treeview (GtkWidget *treeview) {
     // add the Position to the treeview
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes (
-                "Name", renderer, "text", DIRNAME,
+                "Name", renderer, "text", DIR_NAME,
                 NULL);    
     gtk_tree_view_append_column (GTK_TREE_VIEW (treeview), column);
 }
 
-void display (GtkWidget *treeview) {
+void display (GtkWidget *treeview, GtkWidget *listview) {
     
     // create the window
-    GtkWidget *window, *hpaned, *button1, *scroller; 
+    GtkWidget *window, *hpaned, *scroller; 
     
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "WWU Org Chart");
@@ -59,11 +61,10 @@ void display (GtkWidget *treeview) {
                                     GTK_POLICY_AUTOMATIC);
     // create pane
     hpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-    button1 = gtk_button_new_with_label ("List view");
     
     // pack the containers
     gtk_paned_pack1 (GTK_PANED (hpaned), treeview, TRUE, FALSE);
-    gtk_paned_pack2 (GTK_PANED (hpaned), button1, TRUE, FALSE);
+    gtk_paned_pack2 (GTK_PANED (hpaned), listview, TRUE, FALSE);
     gtk_container_add (GTK_CONTAINER (scroller), hpaned);
     gtk_container_add (GTK_CONTAINER (window), scroller);
     gtk_widget_show_all (window);
@@ -85,6 +86,7 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
     }
     if(state == 0){
         char start_name[MAX_PATH];
+
         strcpy(start_name, strrchr(dir_name, '/') + 1);
         struct dirent * entry;
         const char * d_name;
@@ -96,8 +98,9 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
             exit(0);
         }
         gtk_tree_store_append (store, &iter_p, NULL);
-        gtk_tree_store_set (store, &iter_p, 
-                            DIRNAME, start_name,
+        gtk_tree_store_set (store, &iter_p,
+                            FILE_NAME, "",
+                            DIR_NAME, start_name,
                             PATH_NAME, dir_name,
                             -1);  
         list_dir (store, dir_name, iter_p, 1);
@@ -124,7 +127,7 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
         
                         path_length = snprintf (path, PATH_MAX,
                                                 "%s/%s", dir_name, d_name);
-                        printf ("%s\n", path);
+                        printf ("path: %s\n", path);
                         if (path_length >= PATH_MAX) {
                             fprintf (stderr, "Path length has got too long.\n");
                             exit (EXIT_FAILURE);
@@ -132,8 +135,9 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
                         /* Recursively call "list_dir" with the new path. */
                         gtk_tree_store_append (store, &iter_ch, &iter_p);
                         gtk_tree_store_set (store, &iter_ch, 
-                                            DIRNAME, d_name,
-                                            PATH_NAME, dir_name,
+                                            FILE_NAME, " ",
+                                            DIR_NAME, d_name,
+                                            PATH_NAME, path,
                                             -1);  
                         list_dir (store, path, iter_ch, 1);
                     }
@@ -149,17 +153,4 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
         exit (EXIT_FAILURE);
     }
     return 0;
-}
-void item_selected (GtkWidget *selection, gpointer data) {
-    
-    GtkTreeModel *model;
-    GtkTreeIter iter;
-    
-    if (gtk_tree_selection_get_selected (GTK_TREE_SELECTION(selection), 
-        &model, &iter)) {
-        
-        gchar *path_name;
-        gtk_tree_model_get (model, &iter, PATH_NAME, &path_name, -1);
-        g_message("selected %s\n", path_name);
-    }
 }

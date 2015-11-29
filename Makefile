@@ -1,5 +1,5 @@
 EXES = fb
-FBOBJ = FB.o TreeView/buildTree.o
+FBOBJ = FB.o TreeView/buildTree.o ListView/buildList.o Utils/utils.c 
 CC = gcc
 CFLAGS = -Wall -g `pkg-config --cflags --libs gtk+-3.0`
 
