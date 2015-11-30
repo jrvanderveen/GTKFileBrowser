@@ -16,10 +16,11 @@
 
 #define MAX_PATH 1024
 
+
 int main(int argc, char **argv) {
     gtk_init (&argc, &argv);
-    GtkTreeStore *store_tree = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    GtkTreeStore *store_list = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+    GtkTreeStore *store_tree = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+    GtkTreeStore *store_list = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
     char *working_dir = getenv("HOME");
     if (working_dir != NULL) {
         printf("Home dir in enviroment ");
@@ -67,6 +68,5 @@ int main(int argc, char **argv) {
     gtk_main ();
     return 0;
 }
-
 
 
