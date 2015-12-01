@@ -40,9 +40,9 @@ void display (GtkWidget *treeview, GtkWidget *listview) {
     GtkWidget *window, *hpaned, *scroller; 
     
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title (GTK_WINDOW (window), "WWU Org Chart");
+    gtk_window_set_title (GTK_WINDOW (window), "File Browser");
     gtk_container_set_border_width (GTK_CONTAINER (window), 10);
-    gtk_widget_set_size_request (window, 200, 200);
+    gtk_widget_set_size_request (window, 800, 500);
     g_signal_connect (window, "delete_event", gtk_main_quit, NULL);
     
     // create a scrolled windowc

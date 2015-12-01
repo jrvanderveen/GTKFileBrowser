@@ -35,13 +35,16 @@ int build_list (GtkTreeStore* store, char* dir_name) {
         
     GtkTreeIter iter;
     struct stat statbuf;
-    
     // until directory has been searched
     struct dirent * entry;
     char * f_name;
     char f_date[512];
     unsigned int f_size;
     struct tm *tm;
+    GError *error = NULL;
+    GdkPixbuf* image;
+    char *file_type;
+
     while (1) {
         /* "Readdir" gets subsequent entries from "d". */
         entry = readdir (d);
@@ -58,16 +61,32 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                     exit (EXIT_FAILURE);
                 }
                 //determine image
-                char *file_type = (char*) malloc(10*sizeof(char)); 
-                strch()
-                
+                file_type = strrchr(f_name, '.');
+                char *image_path = (char*) malloc(50*sizeof(char));
+                strcpy(image_path, "ListView/icons/16px/");
+                if(file_type != NULL){
+                    file_type++;
+                    strcat(image_path, file_type);
+                    image = gdk_pixbuf_new_from_file(image_path, &error);
+                    if(error != NULL){
+                        error = NULL;
+                        printf("\nextension '%s' not found default set: ListView/icons/16px/_blank", file_type);
+                        image = gdk_pixbuf_new_from_file("ListView/icons/16px/_blank", &error);
+                    }
+                    else{
+                        printf("\nimage_path: %s", image_path);
+                    }
+                }
+                else{
+                    printf("\nimage_path: ListView/icons/16px/exe");
+                    image = gdk_pixbuf_new_from_file("ListView/icons/16px/exe", &error);
+                }
                 //file path 
                 char *full_path = (char*) malloc(MAX_PATH*sizeof(char));
                 strcpy(full_path, dir_name);
                 strcat(full_path, "/");
                 strcat(full_path, f_name);
                 if (stat(full_path, &statbuf) == 0){
-                                            printf("\n f_name1: %s", entry->d_name);
                     f_size = statbuf.st_size;
                     tm = localtime(&statbuf.st_mtime);
                     strftime(f_date, sizeof(f_date), nl_langinfo(D_FMT), tm);
@@ -82,12 +101,12 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                                     FILE_DATE, f_date,
                                     DIR_NAME, "",
                                     PATH_NAME, dir_name,
-                                    IMAGE, NULL,
+                                    IMAGE, image,
                                     -1);
                     
                 }
                 free(full_path);
-                free(file_type);
+                free(image_path);
             }
         }
     }
@@ -104,15 +123,29 @@ void build_listview (GtkWidget *listview) {
     
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;
-
+    
+    //
     // add name to the listview
+    column = gtk_tree_view_column_new();
     renderer = gtk_cell_renderer_text_new();
-    column = gtk_tree_view_column_new_with_attributes (
-                "Name", renderer, "text", FILE_NAME,
+    gtk_tree_view_column_pack_start(column, renderer, FALSE);
+    gtk_tree_view_column_set_attributes (
+                column, renderer, "text", FILE_NAME,
                 NULL); 
     
+    renderer = gtk_cell_renderer_pixbuf_new();
+    gtk_tree_view_column_pack_start(column, renderer, FALSE);
+    gtk_tree_view_column_set_attributes(
+                column, renderer, "pixbuf", IMAGE, 
+                NULL);
+            
+    gtk_tree_view_column_set_title(column, "Name");
     gtk_tree_view_append_column (GTK_TREE_VIEW (listview), column);
+    //sort name
+    gtk_tree_view_column_set_sort_column_id(column, FILE_NAME);
+    gtk_tree_view_column_set_sort_indicator(column, TRUE);
     
+    //
     // add size to the listview
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes (
@@ -120,11 +153,33 @@ void build_listview (GtkWidget *listview) {
                 NULL); 
     
     gtk_tree_view_append_column (GTK_TREE_VIEW (listview), column);
-    
+    //sort size
+    gtk_tree_view_column_set_sort_column_id(column, FILE_SIZE);
+    gtk_tree_view_column_set_sort_indicator(column, TRUE);
+    //
     // date to the listview
     renderer = gtk_cell_renderer_text_new();
     column = gtk_tree_view_column_new_with_attributes (
                 "Date", renderer, "text", FILE_DATE,
                 NULL); 
     gtk_tree_view_append_column (GTK_TREE_VIEW (listview), column);
+    //sort date
+    gtk_tree_view_column_set_sort_column_id(column, FILE_DATE);
+    gtk_tree_view_column_set_sort_indicator(column, TRUE);
 }
+
+gint sort_file_names (GtkTreeModel *model,
+                      GtkTreeIter *a, GtkTreeIter *b,
+                      gpointer data) {
+    
+    gchar *name1, *name2;
+    gtk_tree_model_get (model, a, FILE_NAME, &name1, -1);
+    gtk_tree_model_get (model, b, FILE_NAME, &name2, -1);
+    
+    int order = strcmp(name1, name2);
+    g_free(name1);
+    g_free(name2);
+    
+    return -order;
+}
+

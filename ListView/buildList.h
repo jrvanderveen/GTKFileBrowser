@@ -12,3 +12,6 @@ void size_cell_display (GtkTreeViewColumn* col,
                        GtkTreeModel* model,
                        GtkTreeIter* iter,
                        gpointer data );
+gint sort_file_names (GtkTreeModel *model,
+                      GtkTreeIter *a, GtkTreeIter *b,
+                      gpointer data);

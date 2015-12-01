@@ -21,6 +21,17 @@ int main(int argc, char **argv) {
     gtk_init (&argc, &argv);
     GtkTreeStore *store_tree = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
     GtkTreeStore *store_list = gtk_tree_store_new (COLUMNS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, GDK_TYPE_PIXBUF);
+    
+    //sortable 
+    GtkTreeSortable *sortable = GTK_TREE_SORTABLE (store_list);
+    gtk_tree_sortable_set_sort_func (sortable, FILE_NAME, sort_file_names, 
+                                     GINT_TO_POINTER (FILE_NAME), NULL);
+    gtk_tree_sortable_set_sort_column_id (sortable, FILE_NAME,
+                                          GTK_SORT_ASCENDING);
+    gtk_tree_sortable_set_sort_column_id (sortable, FILE_SIZE,
+                                          GTK_SORT_ASCENDING);
+        gtk_tree_sortable_set_sort_column_id (sortable, FILE_DATE,
+                                          GTK_SORT_ASCENDING);
     char *working_dir = getenv("HOME");
     if (working_dir != NULL) {
         printf("Home dir in enviroment ");
