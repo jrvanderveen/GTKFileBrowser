@@ -27,7 +27,7 @@ void dir_selected (GtkWidget *selection, GtkTreeStore *store) {
     
         gtk_tree_model_get (model, &iter, PATH_NAME, &path_name, -1);
         printf("\n\n");
-        g_message("selected %s", path_name);
+        g_message("Directory selected %s", path_name);
         
         if (build_list(store, (char *)path_name) != 0) {
             printf("\nError building list from data");
@@ -48,7 +48,7 @@ void file_selected (GtkWidget *selection, GtkWidget *grid) {
         gtk_tree_model_get (model, &iter, FILE_NAME, &file_name, -1);
         
         printf("\n\n");
-        g_message("selected %s/%s", path_name,file_name);
+        g_message("FIle selected %s/%s", path_name,file_name);
         
         strcpy(full_name, path_name);
         strcat(full_name, "/");
@@ -67,7 +67,7 @@ void file_selected (GtkWidget *selection, GtkWidget *grid) {
 void display (GtkWidget *treeview, GtkWidget *listview, GtkWidget *grid) {
     
     // create the window
-    GtkWidget *window, *hpaned, *vpaned, *scroller; 
+    GtkWidget *window, *hpaned, *vpaned, *scrollerT, *scrollerL, *scrollerG; 
     
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title (GTK_WINDOW (window), "File Browser");
@@ -76,22 +76,36 @@ void display (GtkWidget *treeview, GtkWidget *listview, GtkWidget *grid) {
     g_signal_connect (window, "delete_event", gtk_main_quit, NULL);
     
     // create a scrolled windowc
-    scroller = gtk_scrolled_window_new (NULL, NULL);
-    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroller),
+    scrollerT = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollerT),
                                     GTK_POLICY_AUTOMATIC,
                                     GTK_POLICY_AUTOMATIC);
+    scrollerL = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollerL),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);
+    scrollerG = gtk_scrolled_window_new (NULL, NULL);
+    gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollerG),
+                                    GTK_POLICY_AUTOMATIC,
+                                    GTK_POLICY_AUTOMATIC);    
     // create v-pane
+    gtk_container_add (GTK_CONTAINER (scrollerL), listview);
+    gtk_container_add (GTK_CONTAINER (scrollerG), grid);
+    
     vpaned = gtk_paned_new (GTK_ORIENTATION_VERTICAL);
-    gtk_paned_pack1 (GTK_PANED (vpaned), listview, TRUE, FALSE);
-    gtk_paned_pack2 (GTK_PANED (vpaned), grid, TRUE, FALSE);
+    gtk_paned_pack1 (GTK_PANED (vpaned), scrollerL, TRUE, FALSE);
+    gtk_paned_pack2 (GTK_PANED (vpaned), scrollerG, TRUE, FALSE);
     
     // create h-pane
+    gtk_container_add (GTK_CONTAINER (scrollerT), treeview);
     hpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
-    gtk_paned_pack1 (GTK_PANED (hpaned), treeview, TRUE, FALSE);
+    gtk_paned_pack1 (GTK_PANED (hpaned), scrollerT, TRUE, FALSE);
     gtk_paned_pack2 (GTK_PANED (hpaned), vpaned, TRUE, FALSE);
-
-    gtk_container_add (GTK_CONTAINER (scroller), hpaned);
-    gtk_container_add (GTK_CONTAINER (window), scroller);
+    
+    gtk_paned_set_position(GTK_PANED(vpaned), 300);
+    gtk_paned_set_position(GTK_PANED(hpaned), 200);
+    
+    gtk_container_add (GTK_CONTAINER (window), hpaned);
     gtk_widget_show_all (window);
 }
 

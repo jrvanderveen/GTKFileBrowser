@@ -54,17 +54,18 @@ int build_list (GtkTreeStore* store, char* dir_name) {
         }
         f_name = entry->d_name;
         if(f_name[0] != '.'){
-            if (entry->d_type & DT_REG) {
+            if (entry->d_type & DT_REG || entry->d_type & DT_DIR) {
                 if (strlen(f_name) >= PATH_MAX) {
                     fprintf (stderr, "File length has got too long.\n");
                     exit (EXIT_FAILURE);
                 }
                 //determine image
-                file_type = strrchr(f_name, '.');
                 char *image_path = (char*) malloc(50*sizeof(char));
-                strcpy(image_path, "ListView/icons/16px/");
+                file_type = strrchr(f_name, '.');
+                
                 if(file_type != NULL){
                     file_type++;
+                    strcpy(image_path, "ListView/icons/16px/");
                     strcat(image_path, file_type);
                     image = gdk_pixbuf_new_from_file(image_path, &error);
                     if(error != NULL){
@@ -77,8 +78,15 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                     }
                 }
                 else{
-                    printf("\nimage_path: ListView/icons/16px/exe");
-                    image = gdk_pixbuf_new_from_file("ListView/icons/16px/exe", &error);
+                    if(entry->d_type & DT_DIR){
+                        printf("\nimage_path: TreeView/icons/folder");
+                        image = gdk_pixbuf_new_from_file("TreeView/icons/folder", &error);
+                    }
+                    else{
+                        printf("\nimage_path: ListView/icons/16px/exe");
+                        image = gdk_pixbuf_new_from_file("ListView/icons/16px/exe", &error);
+                    }
+                    
                 }
                 //file path 
                 char *full_path = (char*) malloc(MAX_PATH*sizeof(char));
