@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <time.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <locale.h>
 #include <langinfo.h>
@@ -92,7 +91,7 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                     strftime(f_date, sizeof(f_date), nl_langinfo(D_FMT), tm);
                     //save file_name into list store
 
-                    printf("\n f_name: %s , f_date: %s , f_size: %d\n", f_name, f_date, f_size);
+                    printf("\nf_name: %s , f_date: %s , f_size: %d", f_name, f_date, f_size);
                     
                     gtk_tree_store_append(store, &iter, NULL);
                     gtk_tree_store_set(store, &iter, 
@@ -128,6 +127,10 @@ void build_listview (GtkWidget *listview) {
     // add name to the listview
     column = gtk_tree_view_column_new();
     renderer = gtk_cell_renderer_text_new();
+    //resizable
+    gtk_tree_view_column_set_resizable(column,TRUE);
+    gtk_tree_view_column_set_min_width(column,100); 
+    
     gtk_tree_view_column_pack_start(column, renderer, FALSE);
     gtk_tree_view_column_set_attributes (
                 column, renderer, "text", FILE_NAME,
@@ -151,6 +154,9 @@ void build_listview (GtkWidget *listview) {
     column = gtk_tree_view_column_new_with_attributes (
                 "Size (b)", renderer, "text", FILE_SIZE,
                 NULL); 
+    //resizable
+    gtk_tree_view_column_set_resizable(column,TRUE);
+    gtk_tree_view_column_set_min_width(column,30); 
     
     gtk_tree_view_append_column (GTK_TREE_VIEW (listview), column);
     //sort size
@@ -162,6 +168,11 @@ void build_listview (GtkWidget *listview) {
     column = gtk_tree_view_column_new_with_attributes (
                 "Date", renderer, "text", FILE_DATE,
                 NULL); 
+    //resizable
+    gtk_tree_view_column_set_resizable(column,TRUE);
+    gtk_tree_view_column_set_min_width(column,30); 
+    
+    
     gtk_tree_view_append_column (GTK_TREE_VIEW (listview), column);
     //sort date
     gtk_tree_view_column_set_sort_column_id(column, FILE_DATE);

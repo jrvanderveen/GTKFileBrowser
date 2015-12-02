@@ -45,8 +45,7 @@ void build_treeview (GtkWidget *treeview) {
 
 }
   
-int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, int state)
-{
+int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, int state) {
     DIR * d;
 
     /* Open the directory specified by "dir_name". */
