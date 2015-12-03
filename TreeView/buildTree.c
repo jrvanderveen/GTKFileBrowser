@@ -56,82 +56,83 @@ int list_dir (GtkTreeStore* store, const char * dir_name, GtkTreeIter iter_p, in
     if (! d) {
         fprintf (stderr, "Cannot open directory '%s': %s\n",
                  dir_name, strerror (errno));
-        exit (EXIT_FAILURE);
-    }
-    GError *error = NULL;
-    GdkPixbuf* image = gdk_pixbuf_new_from_file("TreeView/icons/folder", &error);
-    if(state == 0){
-        char start_name[MAX_PATH];
-
-        strcpy(start_name, strrchr(dir_name, '/') + 1);
-        struct dirent * entry;
-        const char * d_name;
-        
-        entry = readdir (d);
-        
-        if (! entry) {
-            printf("Directory Not Found");
-            exit(0);
-        }
-        gtk_tree_store_append (store, &iter_p, NULL);
-        gtk_tree_store_set (store, &iter_p,
-                            FILE_NAME, "",
-                            FILE_SIZE, 0,
-                            FILE_DATE, "",
-                            DIR_NAME, start_name,
-                            PATH_NAME, dir_name,
-                            IMAGE, image,
-                            -1);  
-        list_dir (store, dir_name, iter_p, 1);
     }
     else{
-        GtkTreeIter iter_ch;
-        struct dirent * entry;
-        char * d_name;
-        int path_length;
-        char path[PATH_MAX];
-
-        while (1) {
-            /* "Readdir" gets subsequent entries from "d". */
+        GError *error = NULL;
+        GdkPixbuf* image = gdk_pixbuf_new_from_file("TreeView/icons/folder", &error);
+        if(state == 0){
+            char start_name[MAX_PATH];
+            
+            strcpy(start_name, strrchr(dir_name, '/') + 1);
+            struct dirent * entry;
             entry = readdir (d);
+            
             if (! entry) {
-                /* There are no more entries in this directory, so break
-                out of the while loop. */
-                break;
+                printf("Directory Not Found");
+                exit(0);
             }
-            d_name = entry->d_name;
-            if(d_name[0] != '.'){
-                if (entry->d_type & DT_DIR) {
-                    if (strcmp (d_name, "..") != 0 && strcmp (d_name, ".") != 0) {
-                        path_length = snprintf (path, PATH_MAX,
-                                                "%s/%s", dir_name, d_name);
-                        printf ("path: %s\n", path);
-                        if (path_length >= PATH_MAX) {
-                            fprintf (stderr, "Path length has got too long.\n");
-                            exit (EXIT_FAILURE);
-                        }
-                        /* Recursively call "list_dir" with the new path. */
-                        gtk_tree_store_append (store, &iter_ch, &iter_p);
-                        gtk_tree_store_set (store, &iter_ch,
-                                            FILE_NAME, "",
-                                            FILE_SIZE, 0,
-                                            FILE_DATE, "",
-                                            DIR_NAME, d_name,
-                                            PATH_NAME, path,
-                                            IMAGE, image,
-                                            -1);  
-                        list_dir (store, path, iter_ch, 1);
-                    }
-                }
-                
-            }
+            gtk_tree_store_append (store, &iter_p, NULL);
+            gtk_tree_store_set (store, &iter_p,
+                                FILE_NAME, "",
+                                FILE_SIZE, 0,
+                                FILE_DATE, "",
+                                DIR_NAME, start_name,
+                                PATH_NAME, dir_name,
+                                IMAGE, image,
+                                -1);  
+            list_dir (store, dir_name, iter_p, 1);
         }
-    }
-    /* After going through all the entries, close the directory. */
-    if (closedir (d)) {
-        fprintf (stderr, "Could not close '%s': %s\n",
-                 dir_name, strerror (errno));
-        exit (EXIT_FAILURE);
+        else{
+            GtkTreeIter iter_ch;
+            struct dirent * entry;
+            char * d_name;
+            int path_length;
+            char path[PATH_MAX];
+            
+            while (1) {
+                /* "Readdir" gets subsequent entries from "d". */
+                entry = readdir (d);
+                if (! entry) {
+                    /* There are no more entries in this directory, so break
+                     *       out of the while loop. */
+                    break;
+                }
+                d_name = entry->d_name;
+                if(d_name[0] != '.'){
+                    if (entry->d_type & DT_DIR) {
+                        if (strcmp (d_name, "..") != 0 && strcmp (d_name, ".") != 0) {
+                            path_length = snprintf (path, PATH_MAX,
+                                                    "%s/%s", dir_name, d_name);
+                            printf ("path: %s\n", path);
+                            if (path_length >= PATH_MAX) {
+                                fprintf (stderr, "Path length has got too long.\n");
+                                exit (EXIT_FAILURE);
+                            }
+                            /* Recursively call "list_dir" with the new path. */
+                            gtk_tree_store_append (store, &iter_ch, &iter_p);
+                            gtk_tree_store_set (store, &iter_ch,
+                                                FILE_NAME, "",
+                                                FILE_SIZE, 0,
+                                                FILE_DATE, "",
+                                                DIR_NAME, d_name,
+                                                PATH_NAME, path,
+                                                IMAGE, image,
+                                                -1);  
+                            list_dir (store, path, iter_ch, 1);
+                        }
+                    }
+                    
+                }
+            }
+
+        }
+        /* After going through all the entries, close the directory. */
+        if (closedir (d)) {
+            fprintf (stderr, "Could not close '%s': %s\n",
+                     dir_name, strerror (errno));
+            exit (EXIT_FAILURE);
+        }
+
     }
     return 0;
 }
