@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -14,6 +15,101 @@
 #include "../enum.h"
 
 #define MAX_PATH 1024
+
+
+void set_permision(char *p_info){
+    char *p;
+    p = strrchr(p_info, '/' );
+    p_info[strlen(p_info)-5] = '\0';
+    
+    struct stat statbuf;
+    mode_t mode;
+    printf("\nfile_name: %s", p_info);
+    if (stat(p_info, &statbuf) == 0){
+        printf("\nSuccess: settign premesions");
+        
+        mode = statbuf.st_mode & 07777;
+        if(strcmp(p, "/u-r") == 0){
+            mode |= S_IRUSR;   
+        }
+        else if(strcmp(p, "/u-w") == 0){
+            mode |= S_IWUSR;
+        }
+        else if(strcmp(p, "/u-x") == 0){
+            mode |= S_IXUSR;
+        }
+        else if(strcmp(p, "/g-r") == 0){
+            mode |= S_IRGRP;
+        }
+        else if(strcmp(p, "/g-w") == 0){
+            mode |= S_IWGRP;
+        }
+        else if(strcmp(p, "/g-x") == 0){
+            mode |= S_IXGRP;
+        }
+        else if(strcmp(p, "/o-r") == 0){
+            mode |= S_IROTH;
+        }
+        else if(strcmp(p, "/o-w") == 0){
+            mode |= S_IWOTH;
+        }
+        else{
+            mode |= S_IXOTH;
+        }
+        chmod(p_info, mode);
+    }
+    else{
+        printf("\nError opening File %s", p_info);
+    }
+    p_info[strlen(p_info)] = ' ';
+}
+
+void unset_permision(char *p_info){
+    
+    char *p;
+    p = strrchr(p_info, '/' );
+    p_info[strlen(p_info)-5] = '\0';
+    
+    struct stat statbuf;
+    mode_t mode;
+    if (stat(p_info, &statbuf) == 0){
+        printf("\nSuccess: unssetting premesions");
+        
+        mode = statbuf.st_mode & 07777;
+        if(strcmp(p, "/u-r") == 0){
+            mode &= ~(S_IRUSR);   
+        }
+        else if(strcmp(p, "/u-w") == 0){
+            mode &= ~(S_IWUSR);
+        }
+        else if(strcmp(p, "/u-x") == 0){
+            mode &= ~(S_IXUSR);
+        }
+        else if(strcmp(p, "/g-r") == 0){
+            mode &= ~(S_IRGRP);
+        }
+        else if(strcmp(p, "/g-w") == 0){
+            mode &= ~(S_IWGRP);
+        }
+        else if(strcmp(p, "/g-x") == 0){
+            mode &= ~(S_IXGRP);
+        }
+        else if(strcmp(p, "/o-r") == 0){
+            mode &= ~(S_IROTH);
+        }
+        else if(strcmp(p, "/o-w") == 0){
+            mode &= ~(S_IWOTH);
+        }
+        else{
+            mode |= S_IXOTH;
+        }
+        chmod(p_info, mode);
+    }
+    else{
+        printf("\nError opening File %s", p_info);
+    }
+    p_info[strlen(p_info)] = ' ';
+}
 
 void dir_selected (GtkWidget *selection, GtkTreeStore *store) {
     

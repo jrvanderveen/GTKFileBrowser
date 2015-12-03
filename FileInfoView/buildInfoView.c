@@ -4,20 +4,23 @@
 #include <gtk/gtk.h>
 #include <grp.h>
 #include <pwd.h>
+#include <stdlib.h>
 
 #include "buildInfoView.h"
+#include "../Utils/utils.h"
 
 #define LEN 20
 #define MAX_PATH 1024
 
-void check_state(GtkWidget* widget, gpointer data){
-        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-        {
-                g_print("Toggle button activated\n");
-        }else
-        {
-                g_print("Toggle button not activated\n");
-        }
+void check_state(GtkWidget* widget, char *data){
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))){
+        set_permision(data);
+        g_print("\nSET: %s", data);
+    }
+    else {
+        unset_permision(data);
+        g_print("\nUNSET: %s", data);
+    }
 }
  
 void build_infoview(GtkWidget *grid, char *file_path){
@@ -38,99 +41,109 @@ void build_infoview(GtkWidget *grid, char *file_path){
                 owner_group_value(grid, label, statbuf);
                 permision_label(grid, label);
                 permision_usr_grp_oth(grid, label);
-                permision_set_usr(grid, label, perm_toggle, statbuf);
-                permision_set_grp(grid, label, perm_toggle, statbuf);
-                permision_set_oth(grid, label, perm_toggle, statbuf);
+                handel_permision_set(file_path, grid, perm_toggle, statbuf);
             }
         }
 }
 
-//owner
-void permision_set_usr(GtkWidget *grid, GtkWidget *label, GtkWidget *perm_toggle, struct stat statbuf){
-    //read
-    perm_toggle = gtk_check_button_new_with_mnemonic("r");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 0, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "u-r");
+void handel_permision_set(char *file_path, GtkWidget *grid, GtkWidget *perm_toggle, struct stat statbuf){    
+    //user read
     if((statbuf.st_mode & S_IRUSR) == S_IRUSR){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-r", 1, 0, 4, 2, 1);
     }
-    gtk_widget_show(perm_toggle);
-    
-    //write
-    perm_toggle = gtk_check_button_new_with_mnemonic("w");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 2, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "u-w");
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-r", 0, 0, 4, 2, 1);
+    }
+    //user write
     if((statbuf.st_mode & S_IWUSR) == S_IWUSR){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-w", 1, 2, 4, 2, 1);
     }
-    gtk_widget_show(perm_toggle);
-    
-    //execute
-    perm_toggle = gtk_check_button_new_with_mnemonic("x");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 4, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "u-x");
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-w", 0, 2, 4, 2, 1);
+    }
+    //user execute
     if((statbuf.st_mode & S_IXUSR) == S_IXUSR){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-x", 1, 4, 4, 2, 1);
     }
-    gtk_widget_show(perm_toggle);    
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /u-x", 0, 4, 4, 2, 1);
+    }
+    //group read
+    if((statbuf.st_mode & S_IRGRP) == S_IRGRP){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-r", 1, 6, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-r", 0, 6, 4, 2, 1);
+    }
+    //group write
+    if((statbuf.st_mode & S_IWGRP) == S_IWGRP){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-w", 1, 8, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-w", 0, 8, 4, 2, 1);
+    }
+    //group execute
+    if((statbuf.st_mode & S_IXGRP) == S_IXGRP){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-x", 1, 10, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /g-x", 0, 10, 4, 2, 1);
+    }
+    //other read
+    if((statbuf.st_mode & S_IROTH) == S_IROTH){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-r", 1, 12, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-r", 0, 12, 4, 2, 1);
+    }
+    //other write
+    if((statbuf.st_mode & S_IWOTH) == S_IWOTH){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-w", 1, 14, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-w", 0, 14, 4, 2, 1);
+    }
+    //other execute
+    if((statbuf.st_mode & S_IXOTH) == S_IXOTH){
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-x", 1, 16, 4, 2, 1);
+    }
+    else {
+        set_checkbox_perm(file_path, perm_toggle, grid, " /o-x", 0, 16, 4, 2, 1);
+    }
 }
 
-//group
-void permision_set_grp(GtkWidget *grid, GtkWidget *label, GtkWidget *perm_toggle, struct stat statbuf){
-    //read
-    perm_toggle = gtk_check_button_new_with_mnemonic("r");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 6, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "g-r");
-    if((statbuf.st_mode & S_IRGRP) == S_IRGRP){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
+void set_checkbox_perm(char *file_path, GtkWidget *perm_toggle, GtkWidget *grid, char *p, int O, int C, int R, int S, int X){    //read
+    char *change_perm;
+    change_perm = (char *) malloc(MAX_PATH);
+    int i = 0;
+    while(file_path[i] != '\0'){
+        change_perm[i] = file_path[i];
+        i++;
+    }
+    int x = 0;
+    while(p[x] != '\0'){
+        change_perm[i] = p[x];
+        i++;
+        x++;
+    }
+    change_perm[i] = '\0';
+    if(p != NULL){
+        if(p[4] == 'r'){perm_toggle = gtk_check_button_new_with_mnemonic("r");}
+        else if(p[4]=='w'){perm_toggle = gtk_check_button_new_with_mnemonic("w");}
+        else {perm_toggle = gtk_check_button_new_with_mnemonic("x");}
+    }
+    else{
+        perm_toggle = gtk_check_button_new_with_mnemonic("r");
+    }
+    gtk_grid_attach (GTK_GRID (grid), perm_toggle, C, R, S, X);
+    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), change_perm);
+    if(O == 1){gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);}
+    else{
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), FALSE);
     }
     gtk_widget_show(perm_toggle);
     
-    //write
-    perm_toggle = gtk_check_button_new_with_mnemonic("w");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 8, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "g-w");
-    if((statbuf.st_mode & S_IWGRP) == S_IWGRP){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
-    }
-    gtk_widget_show(perm_toggle);
     
-    //execute
-    perm_toggle = gtk_check_button_new_with_mnemonic("x");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 10, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), "g-x");
-    if((statbuf.st_mode & S_IXGRP) == S_IXGRP){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
-    }
-    gtk_widget_show(perm_toggle);    
-}
-void permision_set_oth(GtkWidget *grid, GtkWidget *label, GtkWidget *perm_toggle, struct stat statbuf){
-    //read
-    perm_toggle = gtk_check_button_new_with_mnemonic("r");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 12, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), NULL);
-    if((statbuf.st_mode & S_IROTH) == S_IROTH){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
-    }
-    gtk_widget_show(perm_toggle);
-    
-    //write
-    perm_toggle = gtk_check_button_new_with_mnemonic("w");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 14, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), NULL);
-    if((statbuf.st_mode & S_IWOTH) == S_IWOTH){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
-    }
-    gtk_widget_show(perm_toggle);
-    
-    //execute
-    perm_toggle = gtk_check_button_new_with_mnemonic("x");
-    gtk_grid_attach (GTK_GRID (grid), perm_toggle, 16, 4, 2, 1);
-    g_signal_connect(perm_toggle, "toggled", G_CALLBACK(check_state), NULL);
-    if((statbuf.st_mode & S_IXOTH) == S_IXOTH){
-        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(perm_toggle), TRUE);
-    }
-    gtk_widget_show(perm_toggle);    
 }
 
 void permision_usr_grp_oth(GtkWidget *grid, GtkWidget *label){
@@ -227,10 +240,6 @@ void size_path_grid(GtkWidget *grid, GtkWidget *label, char *file_path, struct s
     gtk_grid_attach (GTK_GRID (grid), label, 12, 0, 3, 1);
     gtk_widget_show(label);
 }
-
-
-
-
 
 
 
