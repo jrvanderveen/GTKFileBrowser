@@ -219,7 +219,7 @@ void owner_group_value (GtkWidget *grid, GtkWidget *label, struct stat statbuf){
     struct passwd *pwd;
     ////owner
     label = gtk_widget_new(GTK_TYPE_LABEL, "label", "Owner: ", NULL);
-    gtk_grid_attach (GTK_GRID (grid), label, 10, 1, 1, 1);
+    gtk_grid_attach (GTK_GRID (grid), label, 1, 1, 1, 1);
     gtk_widget_show(label);
     if ((pwd = getpwuid(statbuf.st_uid)) != NULL){
         printf("\nSuccess Owner name found");
@@ -229,12 +229,12 @@ void owner_group_value (GtkWidget *grid, GtkWidget *label, struct stat statbuf){
         printf("\nOwner name not found. Display udi Number.");
         label = gtk_widget_new(GTK_TYPE_LABEL, "label", statbuf.st_uid, NULL);
     }
-    gtk_grid_attach (GTK_GRID (grid), label, 11, 1, 2, 1);
+    gtk_grid_attach (GTK_GRID (grid), label, 2, 1, 2, 1);
     gtk_widget_show(label);
     
     ////group
     label = gtk_widget_new(GTK_TYPE_LABEL, "label", "Group: ", NULL);
-    gtk_grid_attach (GTK_GRID (grid), label, 1, 1, 1, 1);
+    gtk_grid_attach (GTK_GRID (grid), label, 10, 1, 1, 1);
     gtk_widget_show(label);
     if ((grp = getgrgid(statbuf.st_gid)) != NULL){
         printf("\nSuccess group name found");
@@ -244,7 +244,7 @@ void owner_group_value (GtkWidget *grid, GtkWidget *label, struct stat statbuf){
         printf("\nGroup name not found. Display git Number.");
         label = gtk_widget_new(GTK_TYPE_LABEL, "label", statbuf.st_gid, NULL);
     }
-    gtk_grid_attach (GTK_GRID (grid), label, 2, 1, 2, 1);
+    gtk_grid_attach (GTK_GRID (grid), label, 11, 1, 2, 1);
     gtk_widget_show(label);
     
 }

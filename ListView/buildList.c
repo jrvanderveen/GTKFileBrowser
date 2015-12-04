@@ -59,7 +59,8 @@ int build_list (GtkTreeStore* store, char* dir_name) {
     // until directory has been searched
     struct dirent * entry;
     char * f_name;
-    char f_date[512];
+    char f_date[MAX_PATH];
+    char f_time[MAX_PATH];
     unsigned int f_size;
     struct tm *tm;
     GError *error = NULL;
@@ -119,6 +120,9 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                     f_size = statbuf.st_size;
                     tm = localtime(&statbuf.st_mtime);
                     strftime(f_date, sizeof(f_date), nl_langinfo(D_FMT), tm);
+                    strftime(f_time, sizeof(f_time), nl_langinfo(T_FMT), tm);
+                    strcat(f_date, " ");
+                    strcat(f_date, f_time);
                     //save file_name into list store
 
                     printf("\nf_name: %s , f_date: %s , f_size: %d", f_name, f_date, f_size);
