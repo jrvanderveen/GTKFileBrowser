@@ -128,7 +128,7 @@ void unset_permision(char *p_info){
             mode &= ~(S_IWOTH);
         }
         else{
-            mode |= S_IXOTH;
+            mode &= ~(S_IXOTH);
         }
         chmod(p_info, mode);
     }
