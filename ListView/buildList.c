@@ -1,3 +1,20 @@
+/*
+ main functions for listview
+ 
+ build_list (store, dir_name)            
+ build_listview (GtkWidget *listview)
+ gint sort_file_names (model, a,b, data)
+ 
+ each element of the listview consists of
+                        
+                        FILE_NAME, 
+                        FILE_SIZE,
+                        FILE_DATE,
+                        DIR_NAME,
+                        PATH_NAME,
+                        IMAGE,
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,7 +36,12 @@
 #define MAX_PATH 512
 
 
-
+/*
+ This functions basically handels everything didnt have enough time to clean it up when i do i asume it will look a lot like buildtree.c
+ find all the files in the directory name given and store information about them in store
+ for the image i have a folder of images with names like "c" "deb" "h" ect math the extension to the icon and use it as image
+ for each file create a stat for it to find all the information needed
+ */
 int build_list (GtkTreeStore* store, char* dir_name) {
     DIR * d;
     /* Open the directory specified by "dir_name". */
@@ -110,7 +132,6 @@ int build_list (GtkTreeStore* store, char* dir_name) {
                                     PATH_NAME, dir_name,
                                     IMAGE, image,
                                     -1);
-                    
                 }
                 free(full_path);
                 free(image_path);
@@ -125,7 +146,12 @@ int build_list (GtkTreeStore* store, char* dir_name) {
     return 0;
     
 }
-
+/*
+ build_listview (listview)
+ create the graphical view for the list
+ columns include Name Size and Date(last modification)
+ make all columns sortable aswell
+ */
 void build_listview (GtkWidget *listview) {
     
     GtkCellRenderer *renderer;
@@ -186,7 +212,11 @@ void build_listview (GtkWidget *listview) {
     gtk_tree_view_column_set_sort_column_id(column, FILE_DATE);
     gtk_tree_view_column_set_sort_indicator(column, TRUE);
 }
-
+/*
+ sort_file_names(model, a, b, data)
+ callback function for selecting a column to sort
+ sort column based on strcmp
+ */
 gint sort_file_names (GtkTreeModel *model,
                       GtkTreeIter *a, GtkTreeIter *b,
                       gpointer data) {

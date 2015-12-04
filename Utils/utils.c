@@ -1,3 +1,15 @@
+/*
+ This file contains funtions used through program any utility this is needed should be found here
+ 
+ dir_selected (selection, store);
+ display (treeview, listview, grid); 
+ file_selected (selection, grid);
+ set_permision(p_info);
+ unset_permision(p_info);
+ build_fb_input(treeview, listview, grid, store_tree, store_list);
+ pwd ();
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,11 +24,19 @@
 
 #include "../FileInfoView/buildInfoView.h"
 #include "../ListView/buildList.h"
+#include "../TreeView/buildTree.h"
 #include "../enum.h"
 
 #define MAX_PATH 1024
 
-
+/*
+ set_permision(p_info)
+ When a change in a permision togel box is detected if it is toggeled on call set_permision
+ dtermine the file location and create a stat for it
+ set mode the the files current mode
+ determine the permision to be set and XOR it with the current mode
+ chmod mode
+ */
 void set_permision(char *p_info){
     char *p;
     p = strrchr(p_info, '/' );
@@ -63,7 +83,14 @@ void set_permision(char *p_info){
     }
     p_info[strlen(p_info)] = ' ';
 }
-
+/*
+ unset_permision(p_info)
+ When a change in a permision togel box is detected if it is toggeled off call unset_permision
+ dtermine the file location and create a stat for it
+ set mode the the files current mode
+ determine the permision to be set and unset that permision in mode
+ chmod mode
+ */
 void unset_permision(char *p_info){
     
     char *p;
@@ -111,6 +138,11 @@ void unset_permision(char *p_info){
     p_info[strlen(p_info)] = ' ';
 }
 
+/*
+dir_selected (selection, store)
+if a directory form treeview is selected find the path of that directiory form selection
+call build_list to creat a new list of everything in the directory selected
+ */
 void dir_selected (GtkWidget *selection, GtkTreeStore *store) {
     
     GtkTreeModel *model;
@@ -131,6 +163,12 @@ void dir_selected (GtkWidget *selection, GtkTreeStore *store) {
         }
     }
 }
+/*
+ file_selected(selection, grid)
+ if an item is selected from the list view find the path to that item
+ destroy any information in the current file information panel
+ call build list to create a new grid of file information
+ */
 void file_selected (GtkWidget *selection, GtkWidget *grid) {
     
     GtkTreeModel *model;
@@ -150,6 +188,7 @@ void file_selected (GtkWidget *selection, GtkWidget *grid) {
         strcat(full_name, "/");
         strcat(full_name, file_name);
         
+        //remove rows from current grid
         gtk_grid_remove_row (GTK_GRID(grid),0);
         gtk_grid_remove_row (GTK_GRID(grid),0);
         gtk_grid_remove_row (GTK_GRID(grid),0);
@@ -160,6 +199,14 @@ void file_selected (GtkWidget *selection, GtkWidget *grid) {
     }
 }
 
+/*
+ display(treeview, listview, grid)
+ create the main window and its properties
+ The three pannels initilized will be passed in 
+ this function creates 3 scroll able widgets 
+ it places listview and grid in a verticle pane
+ and that verticle pane in a horizontal pane with treeview
+ */
 void display (GtkWidget *treeview, GtkWidget *listview, GtkWidget *grid) {
     
     // create the window
@@ -204,12 +251,41 @@ void display (GtkWidget *treeview, GtkWidget *listview, GtkWidget *grid) {
     gtk_container_add (GTK_CONTAINER (window), hpaned);
     gtk_widget_show_all (window);
 }
+/*
+ build_fb_input(treeview, listview, grid, store_tree, store_list);
+ take widgets treeview listview and grid and call functions that create their graphical aspects
+ set up the signal for selecting a directory and item from the listviwew
+ using store_tree and store_list fill the tree/list views
+ */
+
+void build_fb_input(GtkWidget *treeview, GtkWidget *listview, GtkWidget *grid, GtkTreeStore *store_tree, GtkTreeStore *store_list){
+    build_treeview(treeview);
+    build_listview(listview);
+    build_infoview(grid, NULL);
+    
+    GtkTreeSelection *selection;
+    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(treeview));
+    g_signal_connect (G_OBJECT(selection), "changed", 
+                      G_CALLBACK(dir_selected), store_list);
+    selection = gtk_tree_view_get_selection (GTK_TREE_VIEW(listview));
+    g_signal_connect (G_OBJECT(selection), "changed", 
+                      G_CALLBACK(file_selected), grid);
+        
+    gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), GTK_TREE_MODEL (store_tree));
+    gtk_tree_view_set_model (GTK_TREE_VIEW (listview), GTK_TREE_MODEL (store_list));
+}
+/*
+ pwd()
+ create new current working directory string
+ */
 
 char *pwd () {
-   char cwd[MAX_PATH];
-   if (getcwd(cwd, sizeof(cwd)) != NULL){
+    char cwd[MAX_PATH];
+    if (getcwd(cwd, sizeof(cwd)) != NULL){
+        printf("\n\n %s \n", cwd);
     }
-   else
-       perror("error directory not found");
-   return cwd;
+    else{
+        perror("error directory not found");
+    }
+    return cwd;
 }
